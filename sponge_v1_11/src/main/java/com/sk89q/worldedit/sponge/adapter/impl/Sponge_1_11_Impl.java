@@ -22,6 +22,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.*;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.entity.Entity;
@@ -291,6 +292,11 @@ public class Sponge_1_11_Impl implements SpongeImplAdapter {
     @Override
     public SpongeWorld getWorld(World world) {
         return new SpongeNMSWorld(world);
+    }
+
+    @Override
+    public boolean isBest() {
+        return Sponge.getPlatform().getMinecraftVersion().getName().contains("1.11");
     }
 
     private class SpongeNMSWorld extends SpongeWorld {
