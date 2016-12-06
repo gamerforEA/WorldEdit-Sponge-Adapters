@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = "http://repo.minecrell.net/releases" }
+        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'net.minecrell:VanillaGradle:2.0.3_1'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+    }
+}
+
+subprojects {
+    apply plugin: 'net.minecrell.vanilla.server.library'
+    apply plugin: 'maven'
+    apply plugin: 'java'
+
+    group = pluginGroup
+    version = pluginVersion
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    repositories {
+        maven { url "http://repo.spongepowered.org/maven/" }
+        maven { url "http://maven.sk89q.com/repo/" }
+        mavenLocal()
+    }
+
+    dependencies {
+        compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'
+        compile 'com.sk89q.worldedit:worldedit-sponge:6.1.5-SNAPSHOT'
+    }
+}
+
+project(':sponge_v1_10') {
+    minecraft {
+        version = "1.10.2"
+        mappings = "snapshot_20161117"
+    }
+}
+
+project(':sponge_v1_11') {
+    minecraft {
+        version = "1.11"
+        mappings = "snapshot_20161205"
+    }
+}
