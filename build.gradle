@@ -49,3 +49,11 @@ project(':sponge_v1_11') {
         mappings = "snapshot_20161205"
     }
 }
+
+project(':sponge_dev') {
+    minecraft {
+        version = "1.11"
+        mappings = "snapshot_20161205"
+        reobfJar.enabled = false
+    }
+}
