@@ -3,17 +3,19 @@ buildscript {
         mavenCentral()
         maven { url = 'https://plugins.gradle.org/m2' }
         maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = "http://repo.minecrell.net/releases" }
         maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
         jcenter()
     }
 
     dependencies {
+        classpath 'net.minecrell:VanillaGradle:2.0.3_1'
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
     }
 }
 
 subprojects {
-    apply plugin: 'net.minecraftforge.gradle.tweaker-server'
+    apply plugin: 'net.minecrell.vanilla.server.library'
     apply plugin: 'maven'
     apply plugin: 'java'
 
@@ -47,7 +49,7 @@ project(':sponge_v1_10') {
 
 project(':sponge_v1_11') {
     minecraft {
-        version = "1.11.2"
+        version = "1.11"
         mappings = "snapshot_20170108"
     }
 }
