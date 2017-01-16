@@ -1,8 +1,7 @@
 package com.sk89q.worldedit.sponge.adapter.impl;
 
 import com.sk89q.jnbt.*;
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.*;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.BaseItemStack;
@@ -23,12 +22,13 @@ import net.minecraft.nbt.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.*;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.*;
 import org.spongepowered.api.world.biome.BiomeType;
 
 import javax.annotation.Nullable;
@@ -36,11 +36,7 @@ import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-/**
- * This is used for development. This should always be updated to the latest version WorldEdit supports.
- * Potentially including compatibility for prior versions if needed.
- */
-public class Sponge_Dev_Impl implements SpongeImplAdapter {
+public class Sponge_1_11_2_Impl implements SpongeImplAdapter {
 
     private static final IBlockState JUNGLE_LOG = Blocks.LOG.getDefaultState().withProperty(BlockOldLog.VARIANT, BlockPlanks.EnumType.JUNGLE);
     private static final IBlockState JUNGLE_LEAF = Blocks.LEAVES.getDefaultState().withProperty(BlockOldLeaf.VARIANT, BlockPlanks.EnumType.JUNGLE).withProperty(BlockLeaves.CHECK_DECAY, Boolean.FALSE);
@@ -300,7 +296,7 @@ public class Sponge_Dev_Impl implements SpongeImplAdapter {
 
     @Override
     public boolean isBest() {
-        return true; // If this class loads, it's what we want.
+        return Sponge.getPlatform().getMinecraftVersion().getName().contains("1.11");
     }
 
     private class SpongeNMSWorld extends SpongeWorld {
