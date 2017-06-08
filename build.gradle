@@ -3,19 +3,17 @@ buildscript {
         mavenCentral()
         maven { url = 'https://plugins.gradle.org/m2' }
         maven { url = "http://files.minecraftforge.net/maven" }
-        maven { url = "http://repo.minecrell.net/releases" }
-        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
         jcenter()
     }
 
     dependencies {
-        classpath 'net.minecrell:VanillaGradle:2.0.3_1'
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'gradle.plugin.net.minecrell:vanillagradle:2.2-6'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
 
 subprojects {
-    apply plugin: 'net.minecrell.vanilla.server.library'
+    apply plugin: 'net.minecrell.vanillagradle.server'
     apply plugin: 'maven'
     apply plugin: 'java'
 
@@ -29,14 +27,14 @@ subprojects {
         mavenCentral()
         jcenter()
         maven { url "http://repo.spongepowered.org/maven/" }
-        maven { url "http://maven.sk89q.com/repo/" }
+        maven { url "http://maven.sk89q.com/repo" }
         maven { url = "http://files.minecraftforge.net/maven" }
         mavenLocal()
     }
 
     dependencies {
         compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'
-        compile 'com.sk89q.worldedit:worldedit-core:6.1.5-SNAPSHOT'
+        compile 'com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT'
         compile 'com.sk89q.worldedit:worldedit-sponge:6.1.7-SNAPSHOT'
     }
 }
@@ -59,6 +57,13 @@ project(':sponge_v1_11_2') {
     minecraft {
         version = "1.11.2"
         mappings = "snapshot_20170114"
+    }
+}
+
+project(':sponge_v1_12') {
+    minecraft {
+        version = "1.12"
+        mappings = "snapshot_20170608"
     }
 }
 
