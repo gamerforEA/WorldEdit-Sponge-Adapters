@@ -296,7 +296,7 @@ public class Sponge_1_12_Impl implements SpongeImplAdapter {
 
     @Override
     public boolean isBest() {
-        return Sponge.getPlatform().getMinecraftVersion().getName().contains("1.11");
+        return Sponge.getPlatform().getMinecraftVersion().getName().contains("1.12");
     }
 
     private class SpongeNMSWorld extends SpongeWorld {
