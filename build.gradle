@@ -33,7 +33,7 @@ subprojects {
     }
 
     dependencies {
-        compile 'org.spongepowered:spongeapi:6.0.0-SNAPSHOT'
+        compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
         compile 'com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT'
         compile 'com.sk89q.worldedit:worldedit-sponge:6.1.7-SNAPSHOT'
     }
@@ -69,7 +69,7 @@ project(':sponge_v1_12') {
 
 project(':sponge_dev') {
     minecraft {
-        version = "1.11.2"
+        version = "1.12"
         mappings = "snapshot_20170114"
         reobfJar.enabled = false
     }
