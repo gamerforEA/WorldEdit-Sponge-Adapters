@@ -19,8 +19,9 @@
 
 rootProject.name = 'worldedit-sponge-adapters'
 
-include 'sponge_v1_10',
-        'sponge_v1_11',
-        'sponge_v1_11_2',
+include 'sponge_dev',
+//        'sponge_v1_10',
+//        'sponge_v1_11',
+//        'sponge_v1_11_2',
         'sponge_v1_12',
-        'sponge_dev'
+        'sponge_v1_12_1'
