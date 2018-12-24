@@ -1,19 +1,24 @@
 package com.sk89q.worldedit.sponge.adapter.impl;
 
+import com.google.common.base.MoreObjects;
 import com.sk89q.jnbt.*;
-import com.sk89q.worldedit.*;
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.blocks.BaseItemStack;
-import com.sk89q.worldedit.blocks.LazyBlock;
-import com.sk89q.worldedit.blocks.TileEntityBlock;
 import com.sk89q.worldedit.entity.BaseEntity;
 import com.sk89q.worldedit.internal.Constants;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.registry.state.Property;
 import com.sk89q.worldedit.sponge.SpongeWorld;
 import com.sk89q.worldedit.sponge.adapter.SpongeImplAdapter;
 import com.sk89q.worldedit.util.TreeGenerator;
+import com.sk89q.worldedit.world.block.BaseBlock;
+import com.sk89q.worldedit.world.block.BlockStateHolder;
+import com.sk89q.worldedit.world.entity.EntityType;
+import com.sk89q.worldedit.world.entity.EntityTypes;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.minecraft.block.*;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
@@ -25,10 +30,11 @@ import net.minecraft.world.gen.feature.*;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.world.*;
+import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.biome.BiomeType;
 
 import javax.annotation.Nullable;
@@ -42,12 +48,10 @@ public class Sponge_1_12_1_Impl implements SpongeImplAdapter {
     private static final IBlockState JUNGLE_LEAF = Blocks.LEAVES.getDefaultState().withProperty(BlockOldLeaf.VARIANT, BlockPlanks.EnumType.JUNGLE).withProperty(BlockLeaves.CHECK_DECAY, Boolean.FALSE);
     private static final IBlockState JUNGLE_SHRUB = Blocks.LEAVES.getDefaultState().withProperty(BlockOldLeaf.VARIANT, BlockPlanks.EnumType.OAK).withProperty(BlockLeaves.CHECK_DECAY, Boolean.FALSE);
 
-    @Override
     public int resolve(ItemType type) {
         return Item.getIdFromItem((Item) type);
     }
 
-    @Override
     public int resolve(BlockType type) {
         return Block.getIdFromBlock((Block) type);
     }
@@ -57,12 +61,10 @@ public class Sponge_1_12_1_Impl implements SpongeImplAdapter {
         return Biome.getIdForBiome((Biome) type);
     }
 
-    @Override
     public ItemType resolveItem(int intID) {
         return (ItemType) Item.getItemById(intID);
     }
 
-    @Override
     public BlockType resolveBlock(int intID) {
         return (BlockType) Block.getBlockById(intID);
     }
@@ -272,21 +274,41 @@ public class Sponge_1_12_1_Impl implements SpongeImplAdapter {
         return new DoubleTag(other.getDouble());
     }
 
+    public com.sk89q.worldedit.world.block.BlockType fromNative(Block block) {
+        if (block == null || block == Blocks.AIR) {
+            return com.sk89q.worldedit.world.block.BlockTypes.AIR;
+        }
+
+        String id = Block.REGISTRY.getNameForObject(block).toString();
+        return MoreObjects.firstNonNull(com.sk89q.worldedit.world.block.BlockTypes.get(id), com.sk89q.worldedit.world.block.BlockTypes.AIR);
+    }
+
     @Override
     public ItemStack makeSpongeStack(BaseItemStack itemStack) {
-        net.minecraft.item.ItemStack newStack = new net.minecraft.item.ItemStack(Item.getItemById(itemStack.getType()), itemStack.getAmount(), itemStack.getData());
-        for (Map.Entry<Integer, Integer> entry : itemStack.getEnchantments().entrySet()) {
-            newStack.addEnchantment(net.minecraft.enchantment.Enchantment.getEnchantmentByID(entry.getKey()), entry.getValue());
+        Item item = Item.getByNameOrId(itemStack.getType().getId());
+        if (item == null) {
+            return (ItemStack) (Object) net.minecraft.item.ItemStack.EMPTY;
         }
+
+        net.minecraft.item.ItemStack newStack = new net.minecraft.item.ItemStack(item, itemStack.getAmount());
+        if (itemStack.hasNbtData()) {
+            newStack.setTagCompound(toNative(itemStack.getNbtData()));
+        }
+
         return (ItemStack) (Object) newStack;
     }
 
     @Override
     public BaseEntity createBaseEntity(Entity entity) {
         String id = entity.getType().getId();
+        EntityType entityType = EntityTypes.get(id);
+        if (entityType == null) {
+            return null;
+        }
+
         NBTTagCompound tag = new NBTTagCompound();
         ((net.minecraft.entity.Entity) entity).writeToNBT(tag);
-        return new BaseEntity(id, fromNative(tag));
+        return new BaseEntity(entityType, fromNative(tag));
     }
 
     @Override
@@ -311,11 +333,21 @@ public class Sponge_1_12_1_Impl implements SpongeImplAdapter {
         }
 
         @Override
-        protected BlockState getBlockState(BaseBlock block) {
-            return (BlockState) Block.getBlockById(block.getId()).getStateFromMeta(block.getData());
+        protected BlockState getBlockState(BlockStateHolder<?> block) {
+            Block nmsBlock = Block.getBlockFromName(block.getBlockType().getId());
+            if (nmsBlock == null || nmsBlock == Blocks.AIR) {
+                return BlockTypes.AIR.getDefaultState();
+            }
+
+            IBlockState nmsState = nmsBlock.getDefaultState();
+            for (Map.Entry<Property<?>, Object> entry : block.getStates().entrySet()) {
+                // TODO Convert across states
+            }
+
+            return (BlockState) nmsState;
         }
 
-        private NBTTagCompound updateForSet(NBTTagCompound tag, Vector position) {
+        private NBTTagCompound updateForSet(NBTTagCompound tag, BlockVector3 position) {
             checkNotNull(tag);
             checkNotNull(position);
 
@@ -332,7 +364,7 @@ public class Sponge_1_12_1_Impl implements SpongeImplAdapter {
 
             org.spongepowered.api.world.Location<World> loc = entity.getLocation();
 
-            updateForSet(tag, new Vector(loc.getX(), loc.getY(), loc.getZ()));
+            updateForSet(tag, BlockVector3.at(loc.getX(), loc.getY(), loc.getZ()));
             ((net.minecraft.tileentity.TileEntity) entity).readFromNBT(tag);
         }
 
@@ -346,7 +378,7 @@ public class Sponge_1_12_1_Impl implements SpongeImplAdapter {
         }
 
         @Override
-        public boolean clearContainerBlockContents(Vector position) {
+        public boolean clearContainerBlockContents(BlockVector3 position) {
             BlockPos pos = new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ());
             net.minecraft.tileentity.TileEntity tile =((net.minecraft.world.World) getWorld()).getTileEntity(pos);
             if (tile instanceof IInventory) {
@@ -382,51 +414,48 @@ public class Sponge_1_12_1_Impl implements SpongeImplAdapter {
                 case RANDOM:
                 case PINE:
                 case RANDOM_REDWOOD:
+                case RANDOM_BIRCH:
+                case RANDOM_JUNGLE:
+                case RANDOM_MUSHROOM:
                 default:
                     return null;
             }
         }
 
         @Override
-        public boolean generateTree(TreeGenerator.TreeType type, EditSession editSession, Vector pos) throws MaxChangedBlocksException {
+        public boolean generateTree(TreeGenerator.TreeType type, EditSession editSession, BlockVector3 pos) throws MaxChangedBlocksException {
             WorldGenerator generator = createWorldGenerator(type);
             return generator != null && generator.generate((net.minecraft.world.World) getWorld(), ThreadLocalRandom.current(), new BlockPos(pos.getX(), pos.getY(), pos.getZ()));
         }
 
         @Override
-        public BaseBlock getBlock(Vector position) {
-            World world = getWorld();
-            BlockPos pos = new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ());
-            IBlockState state = ((net.minecraft.world.World) world).getBlockState(pos);
-            net.minecraft.tileentity.TileEntity tile = ((net.minecraft.world.World) world).getTileEntity(pos);
-
-            if (tile != null) {
-                return new TileEntityBaseBlock(Block.getIdFromBlock(state.getBlock()), state.getBlock().getMetaFromState(state), tile);
-            } else {
-                return new BaseBlock(Block.getIdFromBlock(state.getBlock()), state.getBlock().getMetaFromState(state));
-            }
+        public com.sk89q.worldedit.world.block.BlockState getBlock(BlockVector3 position) {
+            return getFullBlock(position).toImmutableState();
         }
 
         @Override
-        public BaseBlock getLazyBlock(Vector position) {
+        public BaseBlock getFullBlock(BlockVector3 position) {
             World world = getWorld();
             BlockPos pos = new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ());
             IBlockState state = ((net.minecraft.world.World) world).getBlockState(pos);
-            return new LazyBlock(Block.getIdFromBlock(state.getBlock()), state.getBlock().getMetaFromState(state), this, position);
-        }
-    }
 
-    private class TileEntityBaseBlock extends BaseBlock implements TileEntityBlock {
+            com.sk89q.worldedit.world.block.BlockType blockType = fromNative(state.getBlock());
+            com.sk89q.worldedit.world.block.BlockState blockState = blockType.getDefaultState();
 
-        TileEntityBaseBlock(int type, int data, net.minecraft.tileentity.TileEntity tile) {
-            super(type, data);
-            setNbtData(fromNative(copyNbtData(tile)));
-        }
+            if (blockType != com.sk89q.worldedit.world.block.BlockTypes.AIR) {
+                net.minecraft.tileentity.TileEntity tile = ((net.minecraft.world.World) world).getTileEntity(pos);
+                if (tile != null) {
+                    BaseBlock baseBlock = blockState.toBaseBlock(fromNative(tile.writeToNBT(new NBTTagCompound())));
 
-        private NBTTagCompound copyNbtData(net.minecraft.tileentity.TileEntity tile) {
-            NBTTagCompound tag = new NBTTagCompound();
-            tile.writeToNBT(tag);
-            return tag;
+                    for (Map.Entry<IProperty<?>, Comparable<?>> entry : state.getProperties().entrySet()) {
+                        // TODO Convert across states
+                    }
+
+                    return baseBlock;
+                }
+            }
+
+            return blockState.toBaseBlock();
         }
     }
 }

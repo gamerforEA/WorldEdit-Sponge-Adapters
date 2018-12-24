@@ -33,9 +33,9 @@ subprojects {
     }
 
     dependencies {
-        compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
-        compile 'com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT'
-        compile 'com.sk89q.worldedit:worldedit-sponge:6.1.7-SNAPSHOT'
+        compile 'org.spongepowered:spongeapi:7.1.0'
+        compile 'com.sk89q.worldedit:worldedit-core:7.0.0-SNAPSHOT'
+        compile 'com.sk89q.worldedit:worldedit-sponge:7.0.0-SNAPSHOT'
     }
 }
 
